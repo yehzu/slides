@@ -4,6 +4,21 @@ class: center, middle
 
 ---
 
+# Hopes that...
+
+Everyone could answer following questions after this sharing
+
+* How many garbage collectors are available in HotSpot JVM
+
+* Which garbage collector we are using
+
+* How does it work?
+
+* How to read the GCLog?
+
+---
+
+
 # Online
 
 1. Java (HotSpot JVM) Garbage Collectors
@@ -20,20 +35,27 @@ class: center, middle
 
 --
 
-* malloc() / free()
+### black magic?!
 
-* segmentations
+--
 
-* black magic
+### don't call `System.gc()`
 
+--
+
+### get rid of malloc() / free() / memory pools
 
 ---
 
 # Two perspectives of GC
 
-1. Latency
+## Latency
 
-2. Throughtput
+How long a GC *Stop The World*
+
+## Throughtput
+
+How much time the GC occupied in a period
 
 ---
 
@@ -61,7 +83,6 @@ class: left, middle
 
 --
 
-class: left, middle
 # A: G1
 
 
@@ -146,6 +167,27 @@ class: center, middle
 # Memory Allocation
 
 
+heap graph, demo the memory alloc process
+
+
+---
+
+graph
+
+demo young gc triggered
+
+---
+
+# Young GC
+
+* assumption: "infant mortality"
+
+    * most of the objects created on heap die young
+
+    * suvriors normally live quite long
+
+* purpose: release unreferenced objects
+
 ---
 
 # Young GC
@@ -156,7 +198,12 @@ class: center, middle
 
     * size of Eden space is **dynamic**
 
-    * from 5% to 60% of heap
+    * from 5% to 60% of the whole heap
+
+* Scan from GC root through Eden regions
+
+* copy live objects to Survivor space
+
 
 
 ```desktop
@@ -164,6 +211,44 @@ GC pause (young); #1 [Eden: 612.0M(612.0M)->0.0B(532.0M) Survivors: 0.0B->80.0M 
 GC pause (young); #2 [Eden: 532.0M(532.0M)->0.0B(532.0M) Survivors: 80.0M->80.0M Heap: 1143.7M(12.0G)->1143.8M(12.0G)]
 ```
 
+---
+
+# Concurrent Marking Cycle
+
+* Triggered when 45% heap is occupied
+
+    * `–XX:InitiatingHeapOccupancyPercent`
+
+* Snapshot-At-The-Beginning (SATB) algorithm
+
+
+---
+
+# Snapshot-At-The-Beginning (SATB)
+
+1. initial marking
+
+    * Start accompany with a Young GC, share the scanning step
+
+    * shorten the STW
+
+2. concurrent marking
+
+    * pre-write barriers for recording changes of references
+
+3. remark
+
+4. clean up
+
+---
+
+# Write Barriers
+
+
+
+---
+
+# Mix GC
 ---
 
 # Terminology
@@ -179,6 +264,10 @@ GC pause (young); #2 [Eden: 532.0M(532.0M)->0.0B(532.0M) Survivors: 80.0M->80.0M
 ---
 
 # References
+
+* https://www.infoq.com/articles/G1-One-Garbage-Collector-To-Rule-Them-All/
+
+* https://xmlandmore.blogspot.com/2014/11/g1-gc-what-is-to-space-exhausted-in-gc.html
 
 * https://plumbr.io/blog/garbage-collection/minor-gc-vs-major-gc-vs-full-gc
 
